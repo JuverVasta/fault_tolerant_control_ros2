@@ -1,0 +1,68 @@
+# controller.yaml — parameters for the fault-tolerant controller and the
+# simulation glue node. The '/**' wildcard applies to any node that loads
+# this file; each node picks up only the parameters it declared.
+#
+# These values correspond to the AscTec Hummingbird quadrotor in the
+# "+"-configuration, matching the URDF in ftc_description.
+
+/**:
+  ros__parameters:
+
+    # ----- Control loop -----
+    ctrl_rate: 100.0          # [Hz]
+    failed_prop: 3            # rotor index (0..3) that fails on 'stop_rotors'
+
+    # ----- Vehicle physical parameters -----
+    mass: 0.716               # [kg]
+    Ix: 0.007                 # [kg m^2]
+    Iy: 0.007
+    Iz: 0.012
+
+    # Rotor lever arms relative to the centre of gravity [m].
+    # Order: rotor 0 (front), 1 (left), 2 (back), 3 (right).
+    lever_arm_x: [0.17,  0.0, -0.17,  0.0]
+    lever_arm_y: [0.0,   0.17, 0.0,  -0.17]
+    # Per-rotor drag (torque/thrust) coefficient, signed by spin direction.
+    drag_coeff:  [-0.016, 0.016, -0.016, 0.016]
+    cg_bias:     [0.0, 0.0, 0.0]
+
+    # ----- Motor model: thrust [N] -> throttle command -----
+    # throttle = (-c2 + sqrt(c2^2 - 4 c1 (c3 - thrust))) / (2 c1)
+    mot_coeff1: 0.000008492875480
+    mot_coeff2: -0.002777454295627
+    mot_coeff3: 0.108400169428593
+    minMot: 0
+    maxMot: 2000
+
+    # Converts thrust [N] -> rotor angular velocity for the Gazebo plugin.
+    # MUST equal <motorConstant> in the URDF.
+    motor_constant: 8.54858e-06
+
+    # ----- Position PID gains (nominal flight) -----
+    kp_pos: [2.0, 2.0, 10.0]
+    kd_pos: [3.0, 3.0, 8.0]
+    ki_pos: [0.2, 0.2, 0.5]
+
+    # ----- Attitude / yaw gains (nominal flight) -----
+    k_att: [50.0, 14.0, 0.0]   # kp, kd, ki  for reduced-attitude control
+    k_yaw: [1.0, 5.0, 0.0]     # kp, kd, ki  for yaw control
+
+    # ----- Gains used after a motor failure -----
+    kp_pos_fail: [1.0, 1.0, 10.0]
+    kd_pos_fail: [1.4, 1.4, 8.0]
+    ki_pos_fail: [0.1, 0.1, 0.5]
+    k_att_fail:  [100.0, 20.0, 0.0]
+
+    # ----- Reduced-attitude controller -----
+    n_primary_axis: 0.15
+
+    # ----- Saturation limits -----
+    maxVertAcc: 4.0
+    maxHorzAcc: 4.0
+    maxHorzAccFail: 3.0
+    maxNbErrInt: 4.0
+    maxPosErrInt: 10.0
+
+    # ----- Options -----
+    use_sigmoid_traj: false
+    use_notch_filter: true

@@ -1,0 +1,158 @@
+<?xml version="1.0"?>
+<!--
+  hummingbird.urdf.xacro
+  Quadrotor model (AscTec Hummingbird-like) in "+"-configuration
+  for use with the ftc_motor_model Gazebo plugin.
+
+  Rotor layout (top view, X axis points forward, Y axis points left):
+    rotor_0  front  (CCW spin)
+    rotor_1  left   (CW spin)
+    rotor_2  back   (CCW spin)
+    rotor_3  right  (CW spin)
+-->
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="hummingbird">
+
+  <!-- ============ Parameters ============ -->
+  <xacro:property name="mass"        value="0.716"/>     <!-- kg -->
+  <xacro:property name="body_radius" value="0.05"/>
+  <xacro:property name="body_height" value="0.04"/>
+  <xacro:property name="arm_length"  value="0.17"/>      <!-- m -->
+  <xacro:property name="rotor_mass"  value="0.005"/>
+  <xacro:property name="rotor_radius" value="0.1"/>
+
+  <!-- Body moments of inertia (kg*m^2) -->
+  <xacro:property name="Ixx" value="0.007"/>
+  <xacro:property name="Iyy" value="0.007"/>
+  <xacro:property name="Izz" value="0.012"/>
+
+  <!-- ============ Base link ============ -->
+  <link name="base_link">
+    <inertial>
+      <mass value="${mass}"/>
+      <origin xyz="0 0 0"/>
+      <inertia ixx="${Ixx}" ixy="0" ixz="0"
+               iyy="${Iyy}" iyz="0" izz="${Izz}"/>
+    </inertial>
+    <visual>
+      <geometry>
+        <cylinder radius="${body_radius}" length="${body_height}"/>
+      </geometry>
+      <material name="dark_grey">
+        <color rgba="0.2 0.2 0.2 1.0"/>
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <cylinder radius="${body_radius}" length="${body_height}"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <!-- ============ Arms (visual only) ============ -->
+  <xacro:macro name="arm" params="name xyz rpy">
+    <link name="${name}">
+      <inertial>
+        <mass value="0.005"/>
+        <inertia ixx="1e-6" ixy="0" ixz="0" iyy="1e-6" iyz="0" izz="1e-6"/>
+      </inertial>
+      <visual>
+        <geometry>
+          <box size="${arm_length} 0.01 0.01"/>
+        </geometry>
+        <material name="grey">
+          <color rgba="0.5 0.5 0.5 1.0"/>
+        </material>
+      </visual>
+    </link>
+    <joint name="${name}_joint" type="fixed">
+      <parent link="base_link"/>
+      <child link="${name}"/>
+      <origin xyz="${xyz}" rpy="${rpy}"/>
+    </joint>
+  </xacro:macro>
+
+  <xacro:arm name="arm_fb" xyz="0 0 0" rpy="0 0 0"/>
+  <xacro:arm name="arm_lr" xyz="0 0 0" rpy="0 0 1.5708"/>
+
+  <!-- ============ Rotor macro ============ -->
+  <!-- color: visual disc color; xyz: position relative to base_link -->
+  <xacro:macro name="rotor" params="number xyz color">
+    <link name="rotor_${number}">
+      <inertial>
+        <mass value="${rotor_mass}"/>
+        <inertia ixx="1e-5" ixy="0" ixz="0"
+                 iyy="1e-5" iyz="0" izz="2e-5"/>
+      </inertial>
+      <visual>
+        <geometry>
+          <cylinder radius="${rotor_radius}" length="0.005"/>
+        </geometry>
+        <material name="rotor_${number}_color">
+          <color rgba="${color}"/>
+        </material>
+      </visual>
+      <collision>
+        <geometry>
+          <cylinder radius="${rotor_radius}" length="0.005"/>
+        </geometry>
+      </collision>
+    </link>
+    <joint name="rotor_${number}_joint" type="fixed">
+      <parent link="base_link"/>
+      <child link="rotor_${number}"/>
+      <origin xyz="${xyz}" rpy="0 0 0"/>
+    </joint>
+  </xacro:macro>
+
+  <!-- Front rotor red so orientation is visible in Gazebo -->
+  <xacro:rotor number="0" xyz=" ${arm_length}  0           0.02" color="1 0 0 1"/>
+  <xacro:rotor number="1" xyz=" 0            ${arm_length} 0.02" color="0 0 0 1"/>
+  <xacro:rotor number="2" xyz="-${arm_length}  0           0.02" color="0 0 0 1"/>
+  <xacro:rotor number="3" xyz=" 0           -${arm_length} 0.02" color="0 0 0 1"/>
+
+  <!-- ============ Gazebo plugin ============ -->
+  <gazebo>
+    <plugin name="ftc_motor_model" filename="libftc_motor_model.so">
+      <ros>
+        <namespace>/hummingbird</namespace>
+      </ros>
+      <robotNamespace>hummingbird</robotNamespace>
+      <baseLinkName>base_link</baseLinkName>
+      <rotor0LinkName>rotor_0</rotor0LinkName>
+      <rotor1LinkName>rotor_1</rotor1LinkName>
+      <rotor2LinkName>rotor_2</rotor2LinkName>
+      <rotor3LinkName>rotor_3</rotor3LinkName>
+      <rotor0Direction>1</rotor0Direction>
+      <rotor1Direction>-1</rotor1Direction>
+      <rotor2Direction>1</rotor2Direction>
+      <rotor3Direction>-1</rotor3Direction>
+      <motorConstant>8.54858e-06</motorConstant>
+      <momentConstant>0.016</momentConstant>
+      <maxRotVelocity>1500.0</maxRotVelocity>
+      <odometryRate>200.0</odometryRate>
+    </plugin>
+  </gazebo>
+
+  <!-- Material tweaks so Gazebo shows colors -->
+  <gazebo reference="base_link">
+    <material>Gazebo/DarkGrey</material>
+  </gazebo>
+  <gazebo reference="rotor_0">
+    <material>Gazebo/Red</material>
+  </gazebo>
+  
+  <!-- Prevent Gazebo from merging rotor links into base_link -->
+  <gazebo reference="rotor_0_joint">
+    <preserveFixedJoint>true</preserveFixedJoint>
+  </gazebo>
+  <gazebo reference="rotor_1_joint">
+    <preserveFixedJoint>true</preserveFixedJoint>
+  </gazebo>
+  <gazebo reference="rotor_2_joint">
+    <preserveFixedJoint>true</preserveFixedJoint>
+  </gazebo>
+  <gazebo reference="rotor_3_joint">
+    <preserveFixedJoint>true</preserveFixedJoint>
+  </gazebo>
+
+</robot>
