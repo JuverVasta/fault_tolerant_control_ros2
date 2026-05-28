@@ -5,9 +5,9 @@ Original project for ROS 1 [uzh-rpg/fault_tolerant_control](https://github.com/u
 ```
 # Install dependencies
 sudo apt install -y python3-colcon-common-extensions libeigen3-dev \
-  ros-humble-eigen3-cmake-module ros-humble-joy \
-  ros-humble-gazebo-ros-pkgs ros-humble-xacro \
-  ros-humble-robot-state-publisher
+ros-humble-eigen3-cmake-module ros-humble-joy \
+ros-humble-gazebo-ros-pkgs ros-humble-xacro \
+ros-humble-robot-state-publisher
 
 # Clone and build
 git clone https://github.com/JuverVasta/fault_tolerant_control_ros2.git
