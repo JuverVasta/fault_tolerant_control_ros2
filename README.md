@@ -3,24 +3,30 @@
 Original project for ROS 1 [uzh-rpg/fault_tolerant_control](https://github.com/uzh-rpg/fault_tolerant_control)
 
 ```
+# Install dependencies
+sudo apt install -y python3-colcon-common-extensions libeigen3-dev \
+  ros-humble-eigen3-cmake-module ros-humble-joy \
+  ros-humble-gazebo-ros-pkgs ros-humble-xacro \
+  ros-humble-robot-state-publisher
 
-
-# 1. Build
-cd ftc_ros2_ws
+# Clone and build
+git clone https://github.com/JuverVasta/fault_tolerant_control_ros2.git
+cd fault_tolerant_control_ros2
+source /opt/ros/humble/setup.bash
 colcon build --symlink-install
 source install/setup.bash
 
-# 2. Run the simulation
+# Run the simulation
 ros2 launch ftc_bringup simulation.launch.py
 
-# 3. Takeoff in a new terminal
-source install/setup.bash
+# New terminal
+source ~/fault_tolerant_control_ros2/install/setup.bash
 ros2 run ftc_ctrl takeoff.sh
 
-# 4. Waypoint flight
+# Waypoint flight
 ros2 run ftc_ctrl goto.sh 1.0 0.0 1.5
 
-# 5. Motor failure
+# Motor failure
 ros2 run ftc_ctrl fail_motor.sh
 ```
 
