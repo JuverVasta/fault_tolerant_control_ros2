@@ -4,7 +4,6 @@ Original project for ROS 1 [uzh-rpg/fault_tolerant_control](https://github.com/u
 
 ```
 
-```bash
 # 1. Build
 cd ftc_ros2_ws
 colcon build --symlink-install
